@@ -5,6 +5,7 @@
 #include "overDensityField.hpp"
 #include "fitsRead.hpp"
 #include "powerSpectrum.hpp"
+#include <omp.h>
 
 int main() {
     double H_0 = 100.0; // Hubble constant in km/s/Mpc
@@ -58,12 +59,36 @@ int main() {
     std::cout << "Setting up power spectrum..." << std::endl;
     powerSpectrum Pk(0.012, 0.3, 0.008);
 
+    double start = omp_get_wtime();
     std::cout << "Calculating power spectrum..." << std::endl;
     std::cout << "    normalization = " << n_gal.getNbw()[2] << std::endl;
     Pk.calculate(delta, N, n_gal.getNbw()[2]);
+    double end = omp_get_wtime();
+    std::cout << "Time to compute power spectrum: " << end - start << std::endl;
 
     std::cout << "Writing power spectrum file..." << std::endl;
     Pk.writeFile("bossPk.dat");
+
+    std::cout << "Getting bootstrapped covariance..." << std::endl;
+    std::vector<std::vector<double>> C = Pk.getParExCov(delta, N, 2048, n_gal.getNbw()[2]);
+
+    std::cout << "Writing correlation matrix to file..." << std::endl;
+    std::ofstream fout("ParExCor.dat");
+    std::ofstream dout("ParExCov.dat");
+    fout.precision(15);
+    dout.precision(15);
+    for (int i = 0; i < C.size(); ++i) {
+        for (int j = 0; j < C[i].size(); ++j) {
+            fout.width(25);
+            dout.width(25);
+            fout << C[i][j]/sqrt(C[i][i]*C[j][j]);
+            dout << C[i][j];
+        }
+        fout << "\n";
+        dout << "\n";
+    }
+    fout.close();
+    dout.close();
 
     return 0;
 }

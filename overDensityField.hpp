@@ -6,8 +6,6 @@
 #include "densityField.hpp"
 
 class overDensityField{
-    std::vector<double> deltaR, L, dr, kx, ky, kz;
-    std::vector<fftw_complex> deltaK;
     std::vector<int> N;
     fftw_plan dr2dk, dk2dr;
     bool realSpace;
@@ -17,6 +15,9 @@ class overDensityField{
     double sinc(double x);
 
 public:
+    std::vector<double> deltaR, L, dr, kx, ky, kz;
+    std::vector<fftw_complex> deltaK;
+
     double shotNoise;
 
     overDensityField(std::vector<int> N, std::vector<double> L);
@@ -30,6 +31,8 @@ public:
     std::vector<double> getDeltaK(int i, int j, int k);
 
     double getFreq(int i, int j, int k);
+
+    std::vector<double> getWaveVec(int i, int j, int k);
 
     double gridCorrection(int i, int j, int k);
 
@@ -84,10 +87,12 @@ overDensityField::overDensityField(std::vector<int> N, std::vector<double> L) {
     std::cout << "    Planning FFTs..." << std::endl;
     fftw_init_threads();
     fftw_plan_with_nthreads(4);
+    fftw_import_wisdom_from_filename("fftw_wisdom.dat");
     this->dr2dk = fftw_plan_dft_r2c_3d(N[0], N[1], N[2], this->deltaR.data(), this->deltaK.data(),
-                                       FFTW_ESTIMATE);
+                                       FFTW_MEASURE);
     this->dk2dr = fftw_plan_dft_c2r_3d(N[0], N[1], N[2], this->deltaK.data(), this->deltaR.data(),
-                                       FFTW_ESTIMATE);
+                                       FFTW_MEASURE);
+    fftw_export_wisdom_to_filename("fftw_wisdom.dat");
 
     std::cout << "    Rezeroing..." << std::endl;
     for (int i = 0; i < this->deltaR.size(); ++i) {
@@ -144,6 +149,10 @@ std::vector<double> overDensityField::getDeltaK(int i, int j, int k) {
 
 double overDensityField::getFreq(int i, int j, int k) {
     return std::sqrt(this->kx[i]*this->kx[i] + this->ky[j]*this->ky[j] + this->kz[k]*this->kz[k]);
+}
+
+std::vector<double> overDensityField::getWaveVec(int i, int j, int k) {
+    return {this->kx[i], this->ky[j], this->kz[k]};;
 }
 
 double overDensityField::gridCorrection(int i, int j, int k) {
