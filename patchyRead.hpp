@@ -29,7 +29,7 @@ std::vector<galaxy> readPatchyMock(std::string file, cosmology &cosmo, std::vect
     return gals;
 }
 
-std::vector<galaxy> readPatchyRandom(std::string file, cosmology &cosmo, std::vector<double> &r_min,
+std::vector<galaxy> readPatchyRandoms(std::string file, cosmology &cosmo, std::vector<double> &r_min,
                                     std::vector<double> &r_max) {
     std::ifstream fin(file, std::ios::in);
     double ra, dec, redshift, mstar, nbar, bias, veto, fiber_col;
