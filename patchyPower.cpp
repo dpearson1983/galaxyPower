@@ -29,6 +29,8 @@ int main() {
     std::string ranFile = "Patchy-Mocks-Randoms-DR12-COMPSAM_V6C_x100";
     std::string mockBase = "Patchy-Mocks-";
     std::string mockExt = ".dat";
+    std::string outBase = "Patchy_Pk_";
+    std::string outExt = ".dat";
 
     std::cout << "Reading randoms file..." << std::endl;
     std::vector<galaxy> rans = readPatchyRandoms(ranFile, cosmo, r_min, r_max);
@@ -47,7 +49,37 @@ int main() {
     densityField n_ran(N,L);
     n_ran.binCIC(rans, r_min);
 
-    for (int mock = 0; mock < 2048; mock++){
+    std::vector<double> rMinDumb(3), rMaxDumb(3);
 
+    std::cout << "Starting processing of mock catalogs...\n";
+    for (int mock = 0; mock < 2048; mock++){
+        std::string mockFile = fileName(mockBase, mock, mockExt);
+        std::string outFile = fileName(outBase, mock, outExt);
+        std::cout << "Processing mock: " << mockFile << std::endl;
+        std::cout << "    Reading in `galaxies'...\n";
+        std::vector<galaxy> gals = readPatchyMock(mockFile, cosmo, rMinDumb, rMaxDumb);
+
+        std::cout << "    Binning galaxies...\n";
+        densityField n_gals(N,L);
+        n_gals.binCIC(gals, r_min);
+
+        std::cout << "    Calculating overdensity field...\n";
+        overDensityField delta(N, L);
+        delta.calculate(n_gals, n_ran);
+
+        std::cout << "    Fourier transforming overdensity field...\n";
+        delta.fourierTransform();
+
+        std::cout << "    Setting up power spectrum...\n";
+        powerSpectrum Pk(0.012, 0.3, 0.008);
+
+        std::cout << "    Calculating power spectrum...\n";
+        double start = omp_get_wtime();
+        Pk.calculate(delta, N, n_gals.getNbw()[2]);
+        double end = omp_get_wtime();
+        std::cout << "        Time to calculate: " << end - start << std::endl;
+
+        std::cout << "    Writing power spectrum to file " << outFile << "...\n";
+        Pk.writeFile(outFile);
     }
 }
