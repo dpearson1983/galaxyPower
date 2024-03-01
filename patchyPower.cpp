@@ -52,7 +52,7 @@ int main() {
     std::vector<double> rMinDumb(3), rMaxDumb(3);
 
     std::cout << "Starting processing of mock catalogs...\n";
-    for (int mock = 0; mock < 2048; mock++){
+    for (int mock = 1; mock <= 2048; mock++){
         std::string mockFile = fileName(mockBase, mock, mockExt);
         std::string outFile = fileName(outBase, mock, outExt);
         std::cout << "Processing mock: " << mockFile << std::endl;
