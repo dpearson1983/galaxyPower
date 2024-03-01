@@ -26,7 +26,7 @@ int main() {
 
     cosmology cosmo(H_0, Omega_M, Omega_L);
 
-    std::string ranFile = "Patchy-Mocks-Randoms-DR12-COMPSAM_V6C_x100";
+    std::string ranFile = "Patchy-Mocks-Randoms-DR12-COMPSAM_V6C_x100.dat";
     std::string mockBase = "Patchy-Mocks-DR12NGC-COMPSAM_V6C_";
     std::string mockExt = ".dat";
     std::string outBase = "Patchy_Pk_";
