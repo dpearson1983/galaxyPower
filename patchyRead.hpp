@@ -1,6 +1,7 @@
 #ifndef _PATCHY_READ_HPP
 #define _PATCHY_READ_HPP
 
+#include <iostream>
 #include <fstream>
 #include <vector>
 #include <string>
@@ -43,6 +44,7 @@ std::vector<galaxy> readPatchyRandoms(std::string file, cosmology &cosmo, std::v
             galaxy ran(ra, dec, redshift, w, nbar);
             ran.astroToCart(cosmo);
             rans.push_back(ran);
+            std::cout << "Adding random point: " << rans.size() << "\n";
 
             std::vector<double> pos = ran.getCartPos();
             for (int j = 0; j < 3; ++j) {
